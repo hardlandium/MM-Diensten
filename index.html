@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MM Tracker</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Media_Markt_logo.svg/512px-Media_Markt_logo.svg.png">
+    
+    <link rel="manifest" href='data:application/manifest+json,{"name":"MM Sales Tracker","short_name":"MM Tracker","start_url":".","display":"standalone","background_color":"#f4f6f8","theme_color":"#df0000","icons":[{"src":"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Media_Markt_logo.svg/512px-Media_Markt_logo.svg.png","sizes":"512x512","type":"image/png"}]}'>
+
+    <style>
+        :root {
+            --mm-red: #df0000; --mm-gradient: linear-gradient(135deg, #ff1a1a 0%, #df0000 100%);
+            --mm-dark: #1e1e1e; --bg: #f4f6f8; --card-bg: #ffffff;
+            --radius: 18px; --shadow: 0 10px 30px rgba(0,0,0,0.06);
+            --wa: #25d366; --teams: #6264a7;
+        }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 40px; -webkit-tap-highlight-color: transparent; }
+        header { background: var(--mm-gradient); color: white; padding: 30px 15px 45px 15px; text-align: center; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
+        header h1 { margin: 0; font-size: 1.2rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        .container { padding: 0 12px; max-width: 500px; margin: -25px auto 0 auto; }
+        .card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; margin-bottom: 15px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.03); }
+        h2 { font-size: 0.75rem; text-transform: uppercase; margin: 0 0 15px 0; color: #888; font-weight: 800; letter-spacing: 0.5px; }
+
+        .month-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; background: #fff; padding: 12px; border-radius: 15px; border: 1px solid #eee; }
+        .month-nav select { border: none; font-weight: 800; font-size: 1rem; color: var(--mm-red); outline: none; background: transparent; -webkit-appearance: none; }
+
+        .target-row { margin-bottom: 15px; }
+        .target-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px; }
+        .target-info { font-size: 0.85rem; font-weight: 800; color: var(--mm-dark); }
+        .progress-bg { background: #f0f0f0; height: 10px; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; transition: width 0.6s cubic-bezier(0.2, 1, 0.3, 1); }
+        .bg-red { background: var(--mm-gradient); } .bg-dark { background: var(--mm-dark); }
+        .target-input { width: 45px; border: 1px solid #ddd; border-radius: 6px; text-align: center; font-weight: 800; font-size: 0.8rem; padding: 3px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; border-top: 1px solid #f0f0f0; padding-top: 20px; }
+        .stat-value { font-size: 1.3rem; font-weight: 800; color: var(--mm-red); display: block; text-align: center; }
+        .stat-label { font-size: 0.6rem; font-weight: 700; color: #aaa; text-transform: uppercase; text-align: center; display: block; margin-top: 2px; }
+
+        .action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn-share { border: none; height: 42px; border-radius: 12px; color: white; font-weight: 800; font-size: 0.7rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bg-wa { background-color: var(--wa); } .bg-teams { background-color: var(--teams); } .bg-mail { background-color: var(--mm-dark); }
+
+        .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
+        label { font-size: 0.7rem; font-weight: 800; color: #666; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        input { width: 100%; height: 48px; padding: 0 14px; border: 2px solid #f2f2f2; border-radius: 12px; font-size: 16px; box-sizing: border-box; transition: border-color 0.2s; }
+        input:focus { border-color: var(--mm-red); outline: none; }
+        .qty-box { background: #f8f9fb; border-radius: 14px; padding: 12px; border: 1px solid #eee; flex: 1; text-align: center; }
+        .mm-btn { background: var(--mm-gradient); color: white; border: none; width: 100%; height: 54px; border-radius: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 10px; font-size: 1rem; box-shadow: 0 4px 15px rgba(223, 0, 0, 0.2); }
+        
+        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #fafafa; border-radius: 14px; margin-bottom: 10px; border: 1px solid #f0f0f0; }
+        .log-date { font-size: 0.65rem; color: #bbb; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 3px; }
+        .tag { font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; color: white; margin-right: 5px; display: inline-block; margin-top: 5px; }
+        .tag-fix { background: #ff4d4d; } .tag-flex { background: #333; } .tag-cal { background: #007bff; }
+        .del-btn { color: #ccc; font-weight: 800; font-size: 0.7rem; cursor: pointer; padding: 10px; transition: color 0.2s; }
+        .del-btn:hover { color: var(--mm-red); }
+
+        .footer-tools { display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+        .btn-tool { flex: 1; border: 1px solid #eee; background: white; height: 38px; border-radius: 10px; cursor: pointer; font-size: 0.65rem; font-weight: 800; color: #888; text-transform: uppercase; }
+        .auto-info { font-size: 0.6rem; text-align: center; color: #ccc; margin-top: 10px; font-weight: 700; }
+    </style>
+</head>
+<body onclick="refreshDateIfEmpty()">
+
+<header><h1>MediaMarkt Tracker</h1></header>
+
+<div class="container">
+    <div class="month-nav">
+        <select id="viewMonth" onchange="render()"></select>
+        <select id="viewYear" onchange="render()"></select>
+    </div>
+
+    <div class="card shadow-top">
+        <div class="target-row">
+            <div class="target-header">
+                <div class="target-info">Sales: <span id="percSales">0%</span></div>
+                <div style="font-size: 0.65rem; color: #bbb;">DOEL: <input type="number" id="targetSales" class="target-input" oninput="updateTargets()"></div>
+            </div>
+            <div class="progress-bg"><div id="fillSales" class="progress-fill bg-red"></div></div>
+        </div>
+        <div class="target-row">
+            <div class="target-header">
+                <div class="target-info">TV Kalibratie: <span id="percCal">0%</span></div>
+                <div style="font-size: 0.65rem; color: #bbb;">DOEL: <input type="number" id="targetCal" class="target-input" oninput="updateTargets()"></div>
+            </div>
+            <div class="progress-bg"><div id="fillCal" class="progress-fill bg-dark"></div></div>
+        </div>
+        <div class="stats-grid">
+            <div><span class="stat-value" id="curFix">0</span><span class="stat-label">Fix</span></div>
+            <div><span class="stat-value" id="curFlex">0</span><span class="stat-label">Flex</span></div>
+            <div><span class="stat-value" id="curCal">0</span><span class="stat-label">Kal</span></div>
+            <div><span class="stat-value" id="curTotal">0</span><span class="stat-label">Totaal</span></div>
+        </div>
+        <div class="action-row">
+            <button class="btn-share bg-wa" onclick="share('wa')">WhatsApp</button>
+            <button class="btn-share bg-teams" onclick="share('teams')">Teams</button>
+            <button class="btn-share bg-mail" onclick="share('mail')">E-mail</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Nieuwe Invoer</h2>
+        <form id="saleForm">
+            <div class="input-group">
+                <div style="flex: 2;"><label>Factuur</label><input type="text" id="invoice" required placeholder="000..."></div>
+                <div style="flex: 3;"><label>Notitie</label><input type="text" id="notes" placeholder="..."></div>
+            </div>
+            <div class="input-group">
+                <div class="qty-box"><label>FIX</label><input type="number" id="qtyFix" value="0" min="0"></div>
+                <div class="qty-box"><label>FLEX</label><input type="number" id="qtyFlex" value="0" min="0"></div>
+                <div class="qty-box"><label>KAL</label><input type="number" id="qtyCal" value="0" min="0"></div>
+            </div>
+            <label>Datum</label>
+            <input type="date" id="dateInput" required>
+            <button type="submit" class="mm-btn">Opslaan & Backup</button>
+            <div class="auto-info">DATA WORDT LOKAAL EN VIA CSV OPGESLAGEN</div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2 id="historyTitle">Geschiedenis</h2>
+        <div id="salesLog"></div>
+        <div class="footer-tools">
+            <button class="btn-tool" onclick="manualExport()">Handmatige Backup</button>
+            <button class="btn-tool" onclick="document.getElementById('importFile').click()">Herstel Data</button>
+            <input type="file" id="importFile" hidden onchange="importCSV(event)" accept=".csv">
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'MM_APP_PRO_V1';
+    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const months = ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"];
+
+    function initSelectors() {
+        const now = new Date();
+        const mSel = document.getElementById('viewMonth');
+        const ySel = document.getElementById('viewYear');
+        months.forEach((m, i) => { mSel.innerHTML += `<option value="${i}" ${i === now.getMonth() ? 'selected' : ''}>${m}</option>`; });
+        for(let y = 2024; y <= 2027; y++) { ySel.innerHTML += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>${y}</option>`; }
+    }
+
+    function setTodayForce() { document.getElementById('dateInput').valueAsDate = new Date(); }
+    function refreshDateIfEmpty() { if (!document.getElementById('dateInput').value) setTodayForce(); }
+
+    document.getElementById('targetSales').value = localStorage.getItem('target_s') || 30;
+    document.getElementById('targetCal').value = localStorage.getItem('target_c') || 5;
+
+    function updateTargets() {
+        localStorage.setItem('target_s', document.getElementById('targetSales').value);
+        localStorage.setItem('target_c', document.getElementById('targetCal').value);
+        render();
+    }
+
+    function render() {
+        const log = document.getElementById('salesLog'); log.innerHTML = '';
+        const selM = parseInt(document.getElementById('viewMonth').value);
+        const selY = parseInt(document.getElementById('viewYear').value);
+        document.getElementById('historyTitle').innerText = `Overzicht ${months[selM]} ${selY}`;
+        
+        let totFix = 0, totFlex = 0, totCal = 0;
+        sales.sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        sales.forEach((s, index) => {
+            const d = new Date(s.date);
+            if(d.getMonth() === selM && d.getFullYear() === selY) {
+                totFix += (parseInt(s.qtyFix)||0); totFlex += (parseInt(s.qtyFlex)||0); totCal += (parseInt(s.qtyCal)||0);
+                const item = document.createElement('div');
+                item.className = 'log-item';
+                item.innerHTML = `<div><span class="log-date">${d.toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit'})}</span><b>${s.invoice}</b> <small style="color:#888;margin-left:5px;">${s.notes||''}</small><div>${s.qtyFix>0?`<span class="tag tag-fix">${s.qtyFix}x Fix</span>`:''}${s.qtyFlex>0?`<span class="tag tag-flex">${s.qtyFlex}x Flex</span>`:''}${s.qtyCal>0?`<span class="tag tag-cal">${s.qtyCal}x Kal</span>`:''}</div></div><div class="del-btn" onclick="removeSale(${index})">Wissen</div>`;
+                log.appendChild(item);
+            }
+        });
+
+        const totalSales = totFix + totFlex;
+        document.getElementById('curFix').innerText = totFix; document.getElementById('curFlex').innerText = totFlex;
+        document.getElementById('curCal').innerText = totCal; document.getElementById('curTotal').innerText = totalSales;
+        
+        const ts = document.getElementById('targetSales').value || 1, tc = document.getElementById('targetCal').value || 1;
+        document.getElementById('fillSales').style.width = Math.min((totalSales/ts)*100, 100) + '%';
+        document.getElementById('percSales').innerText = Math.round((totalSales/ts)*100) + '%';
+        document.getElementById('fillCal').style.width = Math.min((totCal/tc)*100, 100) + '%';
+        document.getElementById('percCal').innerText = Math.round((totCal/tc)*100) + '%';
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+    }
+
+    function performExport(isAuto = false) {
+        if (!sales.length) return;
+        let csv = "Datum;Factuur;Fix;Flex;Kal;Notitie\n";
+        sales.forEach(s => { csv += `${s.date};${s.invoice};${s.qtyFix};${s.qtyFlex};${s.qtyCal};${(s.notes||'').replace(/;/g, ',')}\n`; });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `MM_Tracker_Backup_${isAuto ? 'AUTO' : 'MANUAL'}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function manualExport() { performExport(false); }
+
+    document.getElementById('saleForm').onsubmit = function(e) {
+        e.preventDefault();
+        sales.push({ 
+            invoice: document.getElementById('invoice').value, 
+            notes: document.getElementById('notes').value, 
+            qtyFix: parseInt(document.getElementById('qtyFix').value)||0, 
+            qtyFlex: parseInt(document.getElementById('qtyFlex').value)||0, 
+            qtyCal: parseInt(document.getElementById('qtyCal').value)||0, 
+            date: document.getElementById('dateInput').value 
+        });
+        render(); 
+        this.reset(); 
+        setTodayForce();
+        setTimeout(() => performExport(true), 500);
+    };
+
+    function removeSale(i) { if(confirm('Deze verkoop definitief wissen?')) { sales.splice(i, 1); render(); } }
+
+    function share(p) {
+        const fix = document.getElementById('curFix').innerText, flex = document.getElementById('curFlex').innerText, total = document.getElementById('curTotal').innerText, cal = document.getElementById('curCal').innerText, ps = document.getElementById('percSales').innerText, pc = document.getElementById('percCal').innerText, m = months[document.getElementById('viewMonth').value], y = document.getElementById('viewYear').value;
+        let msg = `*SALES RAPPORTAGE ${m.toUpperCase()} ${y}*\n\n*Sales:*\n- Totaal: ${total} (${ps})\n- Fix: ${fix}\n- Flex: ${flex}\n\n*TV Kalibraties:*\n- Totaal: ${cal} (${pc})`;
+        if(p === 'wa') window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+        else if(p === 'teams') window.open(`https://teams.microsoft.com/l/chat/0/0?users=&message=${encodeURIComponent(msg)}`);
+        else window.location.href = `mailto:?subject=Sales Rapportage&body=${msg.replace(/\*/g, '')}`;
+    }
+
+    function importCSV(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const lines = ev.target.result.split(/\r?\n/);
+            const newData = [];
+            for(let i=1; i<lines.length; i++) {
+                if(!lines[i].trim()) continue;
+                const c = lines[i].split(';');
+                if(c.length >= 5) newData.push({ date: c[0], invoice: c[1], qtyFix: parseInt(c[2])||0, qtyFlex: parseInt(c[3])||0, qtyCal: parseInt(c[4])||0, notes: c[5]||"" });
+            }
+            if(newData.length > 0) { sales = newData; render(); alert('Backup succesvol hersteld!'); }
+        };
+        reader.readAsText(file);
+    }
+
+    // Register simple service worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch", (e) => {});');
+    }
+
+    initSelectors(); setTodayForce(); render();
+</script>
+</body>
+</html>
