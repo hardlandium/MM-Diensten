@@ -1,400 +1,352 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>S&S Tracker V193</title>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>S&S Tracker V308-ROBUST-IMP</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22black%22/><text y=%22.9em%22 font-size=%2280%22 font-weight=%22bold%22 fill=%22%23ff3333%22 font-family=%22Arial%22>S</text></svg>">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         :root {
-            --mm-red: #ff3333; --mm-orange: #ff8800; --mm-gradient: linear-gradient(135deg, #ff4d4d 0%, #df0000 100%);
+            --mm-red: #ff3333; --mm-orange: #ff9900;
             --bg: #000; --card-bg: #161616; --text-dark: #fff; --text-gray: #999;
-            --color-cal: #4db8ff; --color-ok: #00ff88; --mm-font: 'Arial Black', sans-serif;
+            --color-wait: #4db8ff; --color-future: #00ff88; --color-done: #444;
+            --mm-font: 'Arial Black', sans-serif;
+            --h-unit: 46px;
+            --skew-deg: -10deg;
+            --unskew-deg: 10deg;
         }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        .material-icons { font-size: 20px; display: inline-block; line-height: 1; vertical-align: middle; }
+        
         body { font-family: var(--mm-font); font-weight: 900; font-style: italic; background: var(--bg); margin: 0; padding-bottom: env(safe-area-inset-bottom); color: var(--text-dark); text-transform: uppercase; overflow-x: hidden; }
-        header { padding: calc(10px + env(safe-area-inset-top)) 10px 5px 10px; text-align: center; }
         .container { padding: 0 8px; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; min-height: 100vh; }
-        .card { background: var(--card-bg); border-radius: 16px; padding: 12px; margin-top: 10px; border: 1px solid #222; }
-        .logo-card { text-align: center; padding: 15px 10px; border-bottom: 2px solid var(--mm-red); margin-bottom: 0; flex-shrink: 0; }
-        .logo-card .title-main { color: var(--mm-red); font-size: 1.4rem; line-height: 1; letter-spacing: -1px; display: block; }
-        .logo-card .title-sub { color: var(--text-gray); font-size: 0.8rem; letter-spacing: 3px; display: block; margin-top: 2px; }
-
-        .day-box { display: flex; background: #111; border-radius: 10px; padding: 8px; border: 1px solid #222; margin-bottom: 15px; }
-        .day-stat { text-align: center; flex: 1; border-right: 1px solid #222; }
-        .day-stat:last-child { border: none; }
-        .day-stat b { display: block; font-size: 1.1rem; }
-        .day-stat span { font-size: 0.55rem; color: var(--text-gray); }
-
-        .target-row { display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-gray); }
-        .target-input-clean { background: #000; border: 1px solid #333; color: var(--text-gray); width: 60px; height: 26px; border-radius: 4px; text-align: center; font-family: inherit; font-weight: 900; font-size: 12px; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 14px 12px; margin-top: 10px; border: 1px solid #222; position: relative; }
         
-        .progress-bar { width: 100%; height: 12px; background: #222; border-radius: 6px; overflow: hidden; border: 1px solid #333; }
-        .fill { height: 100%; transition: width 0.4s ease; border-radius: 6px; }
+        .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+        .logo-box { background: #000; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #333; }
+        .logo-s { color: var(--mm-red); font-size: 22px; font-weight: 900; }
+        .header-title { font-size: 18px; letter-spacing: 0.5px; color: #fff; font-style: italic; }
 
-        input, select { width: 100%; height: 40px; border-radius: 8px; border: 1px solid #333; background: #222; color: var(--text-gray); font-family: inherit; font-weight: 900; font-style: italic; padding: 0 10px; box-sizing: border-box; font-size: 13px; }
-        .qty-control { display: flex; background: #111; border-radius: 8px; border: 1px solid #333; height: 38px; overflow: hidden; }
-        .qty-btn { background: #222; border: none; color: #fff; width: 28px; font-weight: 900; cursor: pointer; font-size: 16px; }
-        .qty-control input { flex: 1; border: none; background: transparent; text-align: center; font-size: 1rem; color: #fff; padding: 0; }
+        .inner-txt { transform: skewX(var(--unskew-deg)); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; gap: 6px; font-style: italic; }
 
-        .save-btn { background: var(--mm-gradient); color: #fff; border: none; width: 50px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .save-btn.editing { background: var(--color-ok); color: #000; }
-
-        .list-card { display: flex; flex-direction: column; flex: 1; max-height: 500px; margin-bottom: 15px; }
-        #salesLog { flex: 1; overflow-y: auto; margin: 10px 0; padding-right: 4px; -webkit-overflow-scrolling: touch; }
+        .input-skew { height: var(--h-unit); border: 1px solid #333; background: #111; color: #fff; font-family: inherit; font-style: italic; font-weight: 900; font-size: 15px; transform: skewX(var(--skew-deg)); border-radius: 6px; outline: none; padding: 0; display: flex; overflow: hidden; }
+        .input-skew input, .input-skew select { background: transparent; border: none; color: inherit; font-family: inherit; font-style: inherit; font-weight: inherit; font-size: inherit; width: 100%; height: 100%; text-align: center; transform: skewX(var(--unskew-deg)); outline: none; text-transform: uppercase; }
         
-        #salesLog::-webkit-scrollbar { width: 4px; }
-        #salesLog::-webkit-scrollbar-track { background: transparent; }
-        #salesLog::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        #qtyFix::placeholder { color: var(--mm-red); opacity: 0.9; }
+        #qtyFlex::placeholder { color: var(--mm-orange); opacity: 0.9; }
+        #qtyCal::placeholder { color: var(--color-wait); opacity: 0.9; }
+        input::placeholder { font-style: italic; text-transform: uppercase; }
 
-        .search-container { position: relative; margin-top: 5px; margin-bottom: 8px; }
-        .search-container input { padding-left: 35px; border-color: #333; color: #fff; height: 36px; font-size: 11px; }
-        .search-icon { position: absolute; left: 10px; top: 9px; color: var(--text-gray); font-size: 18px; }
+        .btn-action-slim { cursor: pointer; color: var(--text-gray); border: 1px solid #333; background: #111; transform: skewX(var(--skew-deg)); border-radius: 6px; height: var(--h-unit); display: flex; align-items: center; justify-content: center; font-family: inherit; font-style: italic; font-weight: 900; text-transform: uppercase; font-size: 13px; transition: all 0.2s; }
+        .btn-action-slim.submit-style { color: var(--color-future); font-size: 16px; }
+        .btn-success { color: #000 !important; background: var(--color-future) !important; border-color: var(--color-future) !important; }
+        .active-wait { background: var(--color-wait) !important; color: #000 !important; border-color: var(--color-wait) !important; }
 
-        /* Symmetrische randen links en rechts */
-        .log-item { 
-            background: #0c0c0c; 
-            border-radius: 16px; 
-            padding: 14px; 
-            margin-bottom: 10px; 
-            border-left: 6px solid #333; 
-            border-right: 6px solid #333; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 4px; 
-        }
-        .status-wait { border-left-color: var(--color-cal); border-right-color: var(--color-cal); } 
-        .status-open { border-left-color: var(--color-ok); border-right-color: var(--color-ok); }   
-        .status-done { border-left-color: #333; border-right-color: #333; opacity: 0.6; } 
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .progress-container { grid-column: span 3; }
+        .target-container { grid-column: span 1; }
 
-        .log-main-row { display: flex; align-items: center; justify-content: space-between; }
-        .log-left-data { display: flex; align-items: center; gap: 12px; flex: 1; }
-        .log-date { color: var(--text-gray); font-size: 0.85rem; min-width: 42px; font-style: italic; }
-        .log-invoice { font-size: 1.1rem; letter-spacing: 0.5px; cursor: pointer; color: #fff; }
-        .qty-pill { background: #000; padding: 4px 12px; border-radius: 8px; border: 1px solid #1a1a1a; display: flex; gap: 10px; font-size: 0.95rem; }
-        .note-text { color: var(--mm-orange); font-size: 0.85rem; margin-top: 2px; }
+        .progress-bar-wrapper { height: 42px; background: #0a0a0a; border-radius: 6px; overflow: hidden; border: 1px solid #222; position: relative; display: flex; align-items: center; transform: skewX(var(--skew-deg)); }
+        .fill-segment { height: 100%; transition: width 0.8s ease; position: absolute; top: 0; }
+        #fillFix { background: linear-gradient(90deg, #660000, var(--mm-red)); z-index: 2; }
+        #fillFlexSegment { background: linear-gradient(90deg, #663300, var(--mm-orange)); z-index: 1; }
+        #fillBranded { background: linear-gradient(90deg, #004466, var(--color-wait)); }
         
-        .action-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 4px; }
-        .btn-action { height: 44px; border-radius: 10px; border: 1px solid #333; background: #111; color: var(--text-gray); font-size: 0.45rem; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-        .symbol { font-family: 'Material Symbols Rounded'; font-size: 20px; }
+        .bar-label-left, .bar-label-right { position: absolute; z-index: 5; font-size: 12px; color: #fff; transform: skewX(var(--unskew-deg)); pointer-events: none; font-style: italic; }
+        .bar-label-left { left: 12px; }
+        .bar-label-right { right: 12px; }
+
+        .qty-control-skew { display: grid; grid-template-columns: 35px 1fr 35px; background: #111; border: 1px solid #333; height: var(--h-unit); transform: skewX(var(--skew-deg)); border-radius: 6px; overflow: hidden; }
+        .qty-btn-skew { background: #222; border: none; color: var(--text-gray); cursor: pointer; font-weight: 900; font-size: 22px; transform: skewX(var(--unskew-deg)); font-style: italic; }
+        .qty-input-skew { background: transparent; border: none; text-align: center; font-family: inherit; font-weight: 900; font-size: 16px; transform: skewX(var(--unskew-deg)); width: 100%; outline: none; font-style: italic; }
+
+        #salesLog { flex: 1; overflow-y: auto; margin: 8px 0; max-height: 450px; }
+        .log-item { background: #0c0c0c; border-radius: 12px; padding: 12px 8px; margin-bottom: 10px; border: 1px solid #222; position: relative; overflow: hidden; }
+        .log-main-grid { display: grid; grid-template-columns: 45px 1fr 110px 35px; align-items: center; gap: 10px; }
         
-        #datePickerModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { background: #161616; padding: 25px; border-radius: 20px; border: 1px solid #333; width: 85%; max-width: 320px; text-align: center; }
-        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 0.7rem; z-index: 2000; display: none; pointer-events: none; }
+        .status-bar-left, .status-bar-right { position: absolute; top: 0; bottom: 0; width: 4px; }
+        .status-bar-left { left: 0; } .status-bar-right { right: 0; }
+
+        .log-qty-cols { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; background: #000; border-radius: 8px; padding: 5px 2px; border: 1px solid #1a1a1a; transform: skewX(var(--skew-deg)); }
+        .qty-col { display: flex; flex-direction: column; gap: 0px; transform: skewX(var(--unskew-deg)); }
+        .qty-col-label { font-size: 7px; color: #555; font-style: italic; }
+        .qty-col-val { font-size: 14px; font-weight: 900; font-style: italic; }
+        
+        .log-actions { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; margin-bottom: 10px; }
+        .col-3 { grid-column: span 3; } .col-4 { grid-column: span 4; } .col-6 { grid-column: span 6; }
     </style>
 </head>
 <body>
 
-<header></header>
-<div id="toast">GEKOPIEERD</div>
-
 <div class="container">
-    <div class="card logo-card">
-        <span class="title-main">SERVICES & SOLUTIONS</span>
-        <span class="title-sub">TRACKER</span>
-    </div>
-
     <div class="card">
-        <div class="day-box">
-            <div class="day-stat"><b id="mVerz">0</b><span>MAAND</span></div>
-            <div class="day-stat"><b id="mFix" style="color:var(--mm-red);">0</b><span>FIX</span></div>
-            <div class="day-stat"><b id="mFlex" style="color:var(--mm-orange);">0</b><span>FLX</span></div>
-            <div class="day-stat"><b id="mCal" style="color:var(--color-cal);">0</b><span>BS</span></div>
+        <div class="card-header">
+            <div class="logo-box"><span class="logo-s">S</span></div>
+            <div class="header-title">SALES & SOLUTIONS</div>
         </div>
-        <div class="target-row">
-            <span>MAAND DOEL VZK (<span id="percVerz" style="color:var(--mm-red)">0%</span>)</span>
-            <input type="number" id="targetVerz" class="target-input-clean" oninput="saveTargets()">
-        </div>
-        <div class="progress-bar"><div id="fillVerz" class="fill" style="background:var(--mm-red); width:0%;"></div></div>
         
-        <div class="target-row" style="margin-top:12px;">
-            <span>MAAND DOEL BS (<span id="percBranded" style="color:var(--color-cal)">0%</span>)</span>
-            <input type="number" id="targetBranded" class="target-input-clean" oninput="saveTargets()">
+        <div class="stats-grid">
+            <div class="progress-container">
+                <div class="progress-bar-wrapper">
+                    <div class="bar-label-left">INSURANCE</div>
+                    <div class="bar-label-right">
+                        FIX:<b id="valFix">0</b> FLX:<b id="valFlex">0</b> | <span id="percVerz">0%</span>
+                    </div>
+                    <div id="fillFix" class="fill-segment" style="width:0%;"></div>
+                    <div id="fillFlexSegment" class="fill-segment" style="width:0%;"></div>
+                </div>
+            </div>
+            <div class="target-container">
+                <div class="input-skew" style="border-color: #333; background: #0a0a0a;">
+                    <input type="number" id="targetVerz" oninput="saveTargets()" style="color:#fff; font-size:16px;">
+                </div>
+            </div>
         </div>
-        <div class="progress-bar"><div id="fillBranded" class="fill" style="background:var(--color-cal); width:0%;"></div></div>
+
+        <div class="stats-grid">
+            <div class="progress-container">
+                <div class="progress-bar-wrapper">
+                    <div class="bar-label-left">CALIBRATION</div>
+                    <div class="bar-label-right">
+                        CAL:<b id="valCal">0</b> | <span id="percBranded">0%</span>
+                    </div>
+                    <div id="fillBranded" class="fill-segment" style="width:0%;"></div>
+                </div>
+            </div>
+            <div class="target-container">
+                <div class="input-skew" style="border-color: #333; background: #0a0a0a;">
+                    <input type="number" id="targetVerzCalibration" oninput="saveTargets()" style="color:#fff; font-size:16px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-12" style="margin-top:10px; margin-bottom:0;">
+            <div class="btn-action-slim col-3" onclick="shareAsPDF()"><div class="inner-txt"><span class="material-icons">share</span>SHARE</div></div>
+            <div class="btn-action-slim col-3" onclick="manualExport()"><div class="inner-txt"><span class="material-icons">file_download</span>EXP</div></div>
+            <div class="btn-action-slim col-3" onclick="document.getElementById('importInput').click()"><div class="inner-txt"><span class="material-icons">file_upload</span>IMP</div></div>
+            <div class="btn-action-slim col-3" onclick="if(confirm('CLEAR ALL?')){localStorage.clear();location.reload();}"><div class="inner-txt"><span class="material-icons" style="color:var(--mm-red)">delete_sweep</span>CLR</div></div>
+        </div>
+        <input type="file" id="importInput" style="display:none" accept=".csv, .json, text/csv, text/plain" onchange="manualImport(event)">
     </div>
 
     <div class="card">
         <form id="saleForm">
-            <div style="display:flex; gap:6px; margin-bottom:8px;">
-                <div style="flex:1;"><label>FACTUUR</label><input type="text" id="invoice" inputmode="numeric" placeholder="..." required></div>
-                <div style="flex:1;"><label>NOTITIE</label><input type="text" id="notes" placeholder="..."></div>
+            <div class="grid-12">
+                <div class="input-skew col-6"><input type="text" id="invoice" inputmode="numeric" placeholder="INVOICE #" required style="text-align:left; padding-left:15px;"></div>
+                <div class="input-skew col-6"><input type="text" id="notes" placeholder="NOTE..." style="text-align:left; padding-left:15px;"></div>
             </div>
-            <div style="display:flex; gap:4px; margin-bottom:8px;">
-                <div style="flex:1;"><div class="qty-control"><button type="button" class="qty-btn" onclick="adj('qtyFix',-1)">-</button><input type="number" id="qtyFix" placeholder="FX"><button type="button" class="qty-btn" onclick="adj('qtyFix',1)">+</button></div></div>
-                <div style="flex:1;"><div class="qty-control"><button type="button" class="qty-btn" onclick="adj('qtyFlex',-1)">-</button><input type="number" id="qtyFlex" placeholder="FL"><button type="button" class="qty-btn" onclick="adj('qtyFlex',1)">+</button></div></div>
-                <div style="flex:1;"><div class="qty-control"><button type="button" class="qty-btn" onclick="adj('qtyCal',-1)">-</button><input type="number" id="qtyCal" placeholder="BS"><button type="button" class="qty-btn" onclick="adj('qtyCal',1)">+</button></div></div>
+            <div class="grid-12">
+                <div class="qty-control-skew col-4"><button type="button" class="qty-btn-skew" onclick="adj('qtyFix',-1)">-</button><input type="number" id="qtyFix" class="qty-input-skew" placeholder="FIX" style="color:var(--mm-red)"><button type="button" class="qty-btn-skew" onclick="adj('qtyFix',1)">+</button></div>
+                <div class="qty-control-skew col-4"><button type="button" class="qty-btn-skew" onclick="adj('qtyFlex',-1)">-</button><input type="number" id="qtyFlex" class="qty-input-skew" placeholder="FLX" style="color:var(--mm-orange)"><button type="button" class="qty-btn-skew" onclick="adj('qtyFlex',1)">+</button></div>
+                <div class="qty-control-skew col-4"><button type="button" class="qty-btn-skew" onclick="adj('qtyCal',-1)">-</button><input type="number" id="qtyCal" class="qty-input-skew" placeholder="CAL" style="color:var(--color-wait)"><button type="button" class="qty-btn-skew" onclick="adj('qtyCal',1)">+</button></div>
             </div>
-            <div style="display:flex; gap:6px; align-items:flex-end;">
-                <div style="flex:1;"><label>DATUM</label><input type="date" id="dateInput" required></div>
-                <div onclick="forceToday()" style="width:40px; height:40px; background:#111; border:1px solid #333; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="symbol" style="color:var(--text-gray); font-size:18px;">restart_alt</span></div>
-                <div class="date-unknown-box" onclick="toggleDateViaBox()" style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:50px; height:40px; background:#111; border-radius:8px; border:1px solid #333; cursor:pointer;"><span style="font-size:0.45rem; color:var(--text-gray);">WACHT</span><input type="checkbox" id="dateUnknown" style="display:none" onchange="toggleDate(this)"></div>
-                <button type="submit" id="mainSaveBtn" class="save-btn"><span class="symbol">add_task</span></button>
+            <div class="grid-12">
+                <div class="input-skew col-4"><input type="date" id="dateInput" required style="color:var(--text-gray); font-size:12px;"></div>
+                <div id="waitBtn" class="btn-action-slim col-4" onclick="toggleDateViaBox()"><div class="inner-txt"><span class="material-icons">hourglass_empty</span>WAIT</div><input type="checkbox" id="dateUnknown" style="display:none" onchange="toggleDate(this)"></div>
+                <button type="submit" id="mainSubmitBtn" class="btn-action-slim submit-style col-4"><div class="inner-txt"><span class="material-icons">save</span><span id="btnText">SAVE</span></div></button>
             </div>
         </form>
     </div>
 
-    <div class="card list-card">
-        <div style="display:flex; gap:6px; margin-bottom:5px; align-items:center; flex-shrink:0;">
-            <select id="viewMonth" onchange="render()" style="flex:2;"></select>
-            <select id="viewYear" onchange="render()" style="flex:1;"></select>
-            <div onclick="onlyOpen = !onlyOpen; render();" style="cursor:pointer; width:40px; text-align:center;">
-                <span class="symbol" id="eyeIcon" style="color:#444;">visibility</span>
-            </div>
+    <div class="card" style="flex:1; display:flex; flex-direction:column;">
+        <div class="grid-12" style="margin-bottom:12px; gap:6px;">
+            <div class="input-skew" style="grid-column: span 5;"><input type="text" id="searchInput" placeholder="SEARCH..." oninput="render()" style="text-align:left; padding-left:15px;"></div>
+            <div class="input-skew" style="grid-column: span 3;"><select id="viewMonth" onchange="render()"></select></div>
+            <div class="input-skew" style="grid-column: span 2;"><select id="viewYear" onchange="render()"></select></div>
+            <div id="eyeBtn" class="btn-action-slim" style="grid-column: span 2;" onclick="toggleRunningFilter()"><div class="inner-txt"><span id="eyeIcon" class="material-icons" style="font-size:24px;">visibility_off</span></div></div>
         </div>
-
         <div id="salesLog"></div>
-
-        <div class="search-container" style="flex-shrink:0;">
-            <span class="symbol search-icon">search</span>
-            <input type="text" id="searchInput" placeholder="..." oninput="render()">
-        </div>
-        
-        <div class="action-grid" style="flex-shrink:0;">
-            <div class="btn-action" onclick="shareData()"><span class="symbol">share</span>DEEL</div>
-            <div class="btn-action" onclick="exportPDF()"><span class="symbol">picture_as_pdf</span>PDF</div>
-            <div class="btn-action" onclick="manualExport()"><span class="symbol">table_view</span>CSV</div>
-            <div class="btn-action" onclick="document.getElementById('importInput').click()"><span class="symbol">upload_file</span>IMP</div>
-            <div class="btn-action" onclick="if(confirm('WISSEN?')){localStorage.clear();location.reload();}" style="color:#444;"><span class="symbol">delete_forever</span>CLR</div>
-        </div>
-        <input type="file" id="importInput" style="display:none" accept=".csv, text/csv" onchange="manualImport(event)">
-    </div>
-</div>
-
-<div id="datePickerModal">
-    <div class="modal-content">
-        <label style="color: var(--mm-red); display:block; margin-bottom:15px;">WIJZIG DATUM</label>
-        <input type="date" id="modalDateInput" style="margin-bottom:15px;">
-        <div style="display:flex; gap:10px;">
-            <button onclick="closeModal()" style="background:#333; color:#fff; flex:1; height:45px; border-radius:10px; border:none; font-family:inherit; font-weight:900; font-style:italic;">STOP</button>
-            <button onclick="confirmDateChange()" style="background:var(--color-ok); color:#000; flex:1; height:45px; border-radius:10px; border:none; font-family:inherit; font-weight:900; font-style:italic;">OK</button>
-        </div>
     </div>
 </div>
 
 <script>
     const STORAGE_KEY = 'SS_DATA_V184';
     let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let currentlyEditingOrderId = null;
-    let activeEditId = null;
-    let onlyOpen = false;
-    const months = ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"];
+    let editId = null;
+    let showOnlyOpen = false;
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     function getLocalDate() { return new Date().toISOString().split('T')[0]; }
-    function forceToday() { document.getElementById('dateInput').value = getLocalDate(); showToast("DATUM HERSTELD"); }
-    function cleanStr(s) { return String(s || "").replace(/[";]/g, "").trim(); }
-    function forceNum(n) { let num = parseInt(String(n).replace(/[";]/g, "")); return isNaN(num) ? 0 : num; }
-    function showToast(text) { const t = document.getElementById('toast'); t.innerText = text; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 1500); }
     function adj(id, v) { const el = document.getElementById(id); el.value = Math.max(0, (parseInt(el.value) || 0) + v); }
-    function closeModal() { document.getElementById('datePickerModal').style.display = 'none'; }
     function toggleDateViaBox() { const cb = document.getElementById('dateUnknown'); cb.checked = !cb.checked; toggleDate(cb); }
-
+    
     function toggleDate(cb) {
-        const di = document.getElementById('dateInput');
-        document.querySelector('.date-unknown-box').style.borderColor = cb.checked ? 'var(--color-cal)' : '#333';
-        if(cb.checked) { di.disabled = true; di.style.opacity = "0.2"; di.required = false; }
-        else { di.disabled = false; di.style.opacity = "1"; di.required = true; di.value = getLocalDate(); }
+        const di = document.getElementById('dateInput'), btn = document.getElementById('waitBtn');
+        if(cb.checked) { btn.classList.add('active-wait'); di.disabled = true; di.closest('.input-skew').style.opacity = "0.2"; } 
+        else { btn.classList.remove('active-wait'); di.disabled = false; di.closest('.input-skew').style.opacity = "1"; }
     }
 
-    function saveTargets() {
-        localStorage.setItem('ss_t_v', document.getElementById('targetVerz').value);
-        localStorage.setItem('ss_t_b', document.getElementById('targetBranded').value);
-        render();
+    function toggleRunningFilter() { 
+        showOnlyOpen = !showOnlyOpen; document.getElementById('eyeBtn').classList.toggle('active-eye', showOnlyOpen);
+        document.getElementById('eyeIcon').innerText = showOnlyOpen ? 'visibility' : 'visibility_off'; render(); 
     }
 
-    function editOrder(id) {
-        const s = sales.find(x => x.id === id);
-        if(!s) return;
-        currentlyEditingOrderId = id;
-        document.getElementById('invoice').value = s.invoice;
-        document.getElementById('notes').value = s.notes;
-        document.getElementById('qtyFix').value = s.qtyFix;
-        document.getElementById('qtyFlex').value = s.qtyFlex;
-        document.getElementById('qtyCal').value = s.qtyCal;
-        const cb = document.getElementById('dateUnknown');
-        cb.checked = s.isWait;
-        toggleDate(cb);
-        if(!s.isWait) document.getElementById('dateInput').value = s.date;
-        document.getElementById('mainSaveBtn').classList.add('editing');
-        document.getElementById('mainSaveBtn').innerHTML = '<span class="symbol">edit</span>';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function openDateModal(id, current) {
-        activeEditId = id;
-        document.getElementById('modalDateInput').value = (current && current !== "2099-12-31") ? current : getLocalDate();
-        document.getElementById('datePickerModal').style.display = 'flex';
-    }
-
-    function confirmDateChange() {
-        const newDate = document.getElementById('modalDateInput').value;
-        const idx = sales.findIndex(s => s.id === activeEditId);
-        if(idx !== -1 && newDate) { sales[idx].date = newDate; sales[idx].isWait = false; closeModal(); render(); }
+    function copyToClipboard(val, el) {
+        navigator.clipboard.writeText(val).then(() => {
+            const oldColor = el.style.color;
+            el.style.color = 'var(--color-future)';
+            setTimeout(() => { el.style.color = oldColor; }, 500);
+        });
     }
 
     function render() {
-        const log = document.getElementById('salesLog');
-        const selM = parseInt(document.getElementById('viewMonth').value);
-        const selY = parseInt(document.getElementById('viewYear').value);
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const todayStr = getLocalDate();
-        let mFx=0, mFl=0, mB=0;
-        log.innerHTML = '';
+        const log = document.getElementById('salesLog'), selM = parseInt(document.getElementById('viewMonth').value), selY = parseInt(document.getElementById('viewYear').value), search = document.getElementById('searchInput').value.toLowerCase();
+        const today = getLocalDate();
+        let mFx=0, mFl=0, mB=0; log.innerHTML = '';
         
-        sales.forEach(s => {
-            if(!s.isWait) {
-                const d = new Date(s.date);
-                if(d.getMonth() === selM && d.getFullYear() === selY) {
-                    mFx += forceNum(s.qtyFix); mFl += forceNum(s.qtyFlex); mB += forceNum(s.qtyCal);
-                }
+        sales.forEach(s => { 
+            if(!s.isWait && s.date !== "2099-12-31") {
+                const d = new Date(s.date); if(d.getMonth() === selM && d.getFullYear() === selY) { mFx += parseInt(s.qtyFix)||0; mFl += parseInt(s.qtyFlex)||0; mB += parseInt(s.qtyCal)||0; }
             }
         });
-
-        const totaalVzk = mFx + mFl;
-        document.getElementById('mVerz').innerText = totaalVzk;
-        document.getElementById('mFix').innerText = mFx; 
-        document.getElementById('mFlex').innerText = mFl; 
-        document.getElementById('mCal').innerText = mB;
         
-        const tV = parseInt(document.getElementById('targetVerz').value) || 1;
-        const tB = parseInt(document.getElementById('targetBranded').value) || 1;
-
-        const pV = Math.round((totaalVzk / tV) * 100);
-        const pB = Math.round((mB / tB) * 100);
+        const tV = parseInt(document.getElementById('targetVerz').value) || 1, tB = parseInt(document.getElementById('targetVerzCalibration').value) || 1;
+        document.getElementById('valFix').innerText = mFx; document.getElementById('valFlex').innerText = mFl; document.getElementById('valCal').innerText = mB;
         
-        document.getElementById('percVerz').innerText = pV + '%';
-        document.getElementById('percBranded').innerText = pB + '%';
-        document.getElementById('fillVerz').style.width = Math.min(pV, 100) + '%';
-        document.getElementById('fillBranded').style.width = Math.min(pB, 100) + '%';
+        const fixW = Math.min((mFx/tV)*100, 100);
+        document.getElementById('fillFix').style.width = fixW + '%';
+        const flxW = Math.min((mFl/tV)*100, 100 - fixW);
+        document.getElementById('fillFlexSegment').style.width = flxW + '%'; 
+        document.getElementById('fillFlexSegment').style.left = fixW + '%';
+        document.getElementById('fillBranded').style.width = Math.min((mB/tB)*100, 100) + '%';
         
-        document.getElementById('eyeIcon').style.color = onlyOpen ? 'var(--mm-red)' : '#444';
+        document.getElementById('percVerz').innerText = Math.round(((mFx+mFl)/tV)*100) + '%'; 
+        document.getElementById('percBranded').innerText = Math.round((mB/tB)*100) + '%';
 
-        let sorted = [...sales].sort((a, b) => (a.isWait === b.isWait) ? b.date.localeCompare(a.date) : (a.isWait ? -1 : 1));
-
-        sorted.forEach(s => {
-            const isFuture = !s.isWait && s.date > todayStr;
-            const isToday = !s.isWait && s.date === todayStr;
-            const d = new Date(s.date);
-            const matchesSearch = s.invoice.toLowerCase().includes(searchTerm) || s.notes.toLowerCase().includes(searchTerm);
+        sales.sort((a,b) => b.date.localeCompare(a.date)).forEach(s => {
+            const isWait = s.isWait || s.date === "2099-12-31"; const sD = new Date(s.date); 
+            const isInPeriod = isWait || (sD.getMonth() === selM && sD.getFullYear() === selY);
+            if (!isInPeriod || (showOnlyOpen && !isWait && s.date <= today) || (search && !s.invoice.toLowerCase().includes(search) && !(s.notes && s.notes.toLowerCase().includes(search)))) return;
             
-            let show = false;
-            if (matchesSearch) {
-                if (s.isWait || isFuture || isToday) {
-                    show = true; 
-                } else if (!onlyOpen && d.getMonth() === selM && d.getFullYear() === selY) {
-                    show = true; 
-                }
-            }
-
-            if (show) {
-                let statusClass = 'status-done';
-                if(s.isWait) statusClass = 'status-wait';
-                else if(isFuture || isToday) statusClass = 'status-open';
-
-                const dateDisplay = s.isWait ? "WACHT" : s.date.split('-').reverse().slice(0,2).join('/');
-
-                log.innerHTML += `
-                    <div class="log-item ${statusClass}">
-                        <div class="log-main-row">
-                            <div class="log-left-data">
-                                <span class="log-date" onclick="openDateModal(${s.id}, '${s.date}')">${dateDisplay}</span>
-                                <span class="log-invoice" onclick="navigator.clipboard.writeText('${s.invoice}');showToast('GEKOPIEERD')">${s.invoice}</span>
-                                <div class="qty-pill">
-                                    <span style="color:var(--mm-red)">${s.qtyFix}</span><span style="color:var(--mm-orange)">${s.qtyFlex}</span><span style="color:var(--color-cal)">${s.qtyCal}</span>
-                                </div>
-                            </div>
-                            <div style="display:flex; gap:10px;">
-                                <span class="symbol" onclick="editOrder(${s.id})" style="color:var(--text-gray); font-size:18px; cursor:pointer;">edit</span>
-                                <span class="symbol" onclick="if(confirm('WISSEN?')){sales=sales.filter(x=>x.id!==${s.id});render();}" style="color:var(--text-gray); font-size:18px; cursor:pointer;">delete</span>
-                            </div>
-                        </div>
-                        ${s.notes ? `<div class="note-text">${s.notes}</div>` : ''}
-                    </div>`;
-            }
+            const dP = s.date.split('-'); 
+            const shortD = isWait ? '---' : `${dP[2]}\n${months[parseInt(dP[1])-1]}`;
+            const statusColor = isWait ? 'var(--color-wait)' : (s.date > today ? 'var(--color-future)' : 'var(--color-done)');
+            
+            log.innerHTML += `
+            <div class="log-item">
+                <div class="status-bar-left" style="background:${statusColor}"></div>
+                <div class="status-bar-right" style="background:${statusColor}"></div>
+                <div class="log-main-grid">
+                    <div style="font-size:9px; color:var(--text-gray); text-align:center; font-style:italic;">${shortD}</div>
+                    <div style="overflow:hidden; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="invoice-tap" onclick="copyToClipboard('${s.invoice}', this)" style="font-size:16px; font-weight:900; color:#fff; letter-spacing:0.5px;">${s.invoice}</div>
+                        <div style="font-size:13px; font-weight:900; color:var(--mm-orange); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px;">${s.notes || '-'}</div>
+                    </div>
+                    <div class="log-qty-cols">
+                        <div class="qty-col"><span class="qty-col-label">FIX</span><span class="qty-col-val" style="color:var(--mm-red)">${s.qtyFix}</span></div>
+                        <div class="qty-col"><span class="qty-col-label">FLX</span><span class="qty-col-val" style="color:var(--mm-orange)">${s.qtyFlex}</span></div>
+                        <div class="qty-col"><span class="qty-col-label">CAL</span><span class="qty-col-val" style="color:var(--color-wait)">${s.qtyCal}</span></div>
+                    </div>
+                    <div class="log-actions">
+                        <span class="material-icons" style="color:#eee; font-size:20px; cursor:pointer;" onclick="startEdit(${s.id})">edit</span>
+                        <span class="material-icons" style="color:#444; font-size:20px; cursor:pointer;" onclick="confirmDelete(${s.id})">delete</span>
+                    </div>
+                </div>
+            </div>`;
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
     }
 
     document.getElementById('saleForm').onsubmit = function(e) {
-        e.preventDefault();
-        const wait = document.getElementById('dateUnknown').checked;
-        const data = {
-            id: currentlyEditingOrderId || Date.now(),
-            invoice: cleanStr(document.getElementById('invoice').value),
-            notes: cleanStr(document.getElementById('notes').value),
-            qtyFix: forceNum(document.getElementById('qtyFix').value),
-            qtyFlex: forceNum(document.getElementById('qtyFlex').value),
-            qtyCal: forceNum(document.getElementById('qtyCal').value),
-            date: wait ? "2099-12-31" : document.getElementById('dateInput').value,
-            isWait: wait
-        };
-        if(currentlyEditingOrderId) {
-            sales[sales.findIndex(x => x.id === currentlyEditingOrderId)] = data;
-            currentlyEditingOrderId = null;
-            document.getElementById('mainSaveBtn').classList.remove('editing');
-            document.getElementById('mainSaveBtn').innerHTML = '<span class="symbol">add_task</span>';
-        } else { sales.push(data); }
+        e.preventDefault(); const btn = document.getElementById('mainSubmitBtn'), wait = document.getElementById('dateUnknown').checked;
+        const data = { invoice: document.getElementById('invoice').value, notes: document.getElementById('notes').value, qtyFix: parseInt(document.getElementById('qtyFix').value)||0, qtyFlex: parseInt(document.getElementById('qtyFlex').value)||0, qtyCal: parseInt(document.getElementById('qtyCal').value)||0, date: wait ? "2099-12-31" : document.getElementById('dateInput').value, isWait: wait };
+        if(editId) { sales[sales.findIndex(x => x.id === editId)] = { id: editId, ...data }; editId = null; document.getElementById('btnText').innerText = 'SAVE'; } 
+        else { sales.push({ id: Date.now(), ...data }); }
+        btn.classList.add('btn-success'); setTimeout(() => btn.classList.remove('btn-success'), 600);
         this.reset(); document.getElementById('dateInput').value = getLocalDate(); toggleDate(document.getElementById('dateUnknown')); render();
     };
 
-    function manualImport(event) {
-        const file = event.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n');
-            const imported = [];
-            lines.forEach((line, i) => {
-                if(i === 0 || !line.trim()) return;
-                const sep = line.includes(';') ? ';' : ',';
-                const col = line.split(sep);
-                if(col.length >= 5) {
-                    const d = cleanStr(col[0]);
-                    imported.push({ id: Date.now()+i, date: d, invoice: cleanStr(col[1]), qtyFix: forceNum(col[2]), qtyFlex: forceNum(col[3]), qtyCal: forceNum(col[4]), notes: cleanStr(col[5] || ""), isWait: d.includes("2099") });
-                }
-            });
-            if(imported.length > 0) { sales = imported; render(); alert("IMPORT GELUKT"); }
-        };
-        reader.readAsText(file);
+    function startEdit(id) {
+        const s = sales.find(x => x.id === id); if(!s) return; editId = id; document.getElementById('invoice').value = s.invoice; document.getElementById('notes').value = s.notes || '';
+        document.getElementById('qtyFix').value = s.qtyFix; document.getElementById('qtyFlex').value = s.qtyFlex; document.getElementById('qtyCal').value = s.qtyCal;
+        document.getElementById('dateInput').value = s.isWait ? getLocalDate() : s.date; document.getElementById('dateUnknown').checked = s.isWait;
+        toggleDate(document.getElementById('dateUnknown')); document.getElementById('btnText').innerText = 'UPDATE'; window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function manualExport() {
-        let csv = "DATUM;FACTUUR;FIX;FLEX;BS;NOTITIE\n";
-        sales.forEach(s => { csv += `${s.date};${s.invoice};${s.qtyFix};${s.qtyFlex};${s.qtyCal};${s.notes}\n`; });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'SS_Backup.csv'; a.click();
+        const rows = sales.map(s => [s.id, s.date, `"${s.invoice}"`, s.qtyFix, s.qtyFlex, s.qtyCal, `"${s.notes || ''}"`, s.isWait].join(","));
+        const blob = new Blob([["id,date,invoice,qtyFix,qtyFlex,qtyCal,notes,isWait", ...rows].join("\n")], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob); const dl = document.createElement('a'); dl.href = url; dl.download = `S-S_Backup_${getLocalDate()}.csv`; dl.click();
     }
 
-    function shareData() {
-        const selM = document.getElementById('viewMonth').value;
-        const selY = document.getElementById('viewYear').value;
-        let t = `S&S RAPPORT - ${months[selM]} ${selY}\n\n`;
-        sales.filter(s => !s.isWait && new Date(s.date).getMonth() == selM && new Date(s.date).getFullYear() == selY).forEach(s => {
-            t += `${s.date.split('-').reverse().join('-')} | ${s.invoice} | FX:${s.qtyFix} FL:${s.qtyFlex} BS:${s.qtyCal}\n`;
-        });
-        navigator.share ? navigator.share({text:t}) : navigator.clipboard.writeText(t);
+    function manualImport(event) {
+        const file = event.target.files[0]; if (!file) return;
+        const reader = new FileReader(); reader.onload = function(e) {
+            try {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/); const imported = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    // Improved split: supports comma and semicolon, handles quotes
+                    const cols = line.split(/[,;](?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (cols.length >= 6) {
+                        imported.push({ 
+                            id: parseInt(cols[0]) || Date.now() + i, 
+                            date: cols[1].trim(), 
+                            invoice: cols[2].replace(/"/g, '').trim(), 
+                            qtyFix: parseInt(cols[3]) || 0, 
+                            qtyFlex: parseInt(cols[4]) || 0, 
+                            qtyCal: parseInt(cols[5]) || 0, 
+                            notes: cols[6] ? cols[6].replace(/"/g, '').trim() : '', 
+                            isWait: cols[7] ? cols[7].trim().toLowerCase() === 'true' : false 
+                        });
+                    }
+                }
+                if (imported.length > 0) { 
+                    sales = imported; 
+                    render(); 
+                    alert(`SUCCESS: ${imported.length} ORDERS IMPORTED`); 
+                } else {
+                    alert("NO VALID ORDERS FOUND IN FILE");
+                }
+            } catch (err) { alert("IMPORT FAILED: CHECK FILE FORMAT"); }
+            event.target.value = '';
+        }; reader.readAsText(file);
     }
 
-    function exportPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const selM = document.getElementById('viewMonth').value;
-        const selY = document.getElementById('viewYear').value;
-        doc.setFontSize(22); doc.setTextColor(255, 51, 51); doc.text(`SERVICES & SOLUTIONS`, 14, 20);
-        doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.text(`TRACKER REPORT: ${months[selM].toUpperCase()} ${selY}`, 14, 28);
-        const body = sales.filter(s => !s.isWait && new Date(s.date).getMonth() == selM).map(s => [s.date.split('-').reverse().slice(0,2).join('/'), s.invoice, s.qtyFix, s.qtyFlex, s.qtyCal, s.notes]);
-        doc.autoTable({ head: [['DATUM', 'FACTUUR', 'FIX', 'FLEX', 'BS', 'NOTITIE']], body: body, startY: 35 });
-        doc.save(`SS_Report_${months[selM]}.pdf`);
-    }
+    function saveTargets() { localStorage.setItem('ss_t_v', document.getElementById('targetVerz').value); localStorage.setItem('ss_t_b_c', document.getElementById('targetVerzCalibration').value); render(); }
+    function confirmDelete(id) { if(confirm('DELETE?')) { sales = sales.filter(x => x.id !== id); render(); } }
 
     window.onload = function() {
-        const mS = document.getElementById('viewMonth'), n = new Date();
-        months.forEach((m, i) => { mS.innerHTML += `<option value="${i}" ${i === n.getMonth() ? 'selected' : ''}>${m.toUpperCase()}</option>`; });
-        document.getElementById('viewYear').innerHTML = `<option value="${n.getFullYear()}">${n.getFullYear()}</option>`;
-        document.getElementById('targetVerz').value = localStorage.getItem('ss_t_v') || 40;
-        document.getElementById('targetBranded').value = localStorage.getItem('ss_t_b') || 10;
-        document.getElementById('dateInput').value = getLocalDate();
-        render();
+        const mS = document.getElementById('viewMonth'), yS = document.getElementById('viewYear'), n = new Date();
+        months.forEach((m, i) => mS.innerHTML += `<option value="${i}" ${i === n.getMonth() ? 'selected' : ''}>${m.toUpperCase()}</option>`);
+        [n.getFullYear(), n.getFullYear()-1, n.getFullYear()-2].forEach(y => yS.innerHTML += `<option value="${y}" ${y === n.getFullYear() ? 'selected' : ''}>${y}</option>`);
+        document.getElementById('targetVerz').value = localStorage.getItem('ss_t_v') || 40; 
+        document.getElementById('targetVerzCalibration').value = localStorage.getItem('ss_t_b_c') || 10;
+        document.getElementById('dateInput').value = getLocalDate(); render();
     };
+
+    async function shareAsPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const selM = parseInt(document.getElementById('viewMonth').value);
+        const selY = parseInt(document.getElementById('viewYear').value);
+        const fileName = `S-S_Report_${months[selM]}_${selY}.pdf`;
+        const filtered = sales.filter(s => !s.isWait && new Date(s.date).getMonth() === selM && new Date(s.date).getFullYear() === selY);
+        doc.text(`S&S REPORT: ${months[selM]} ${selY}`, 15, 20);
+        doc.autoTable({
+            startY: 30,
+            head: [['DATE', 'INVOICE', 'FIX', 'FLX', 'CAL', 'NOTES']],
+            body: filtered.map(s => [s.date, s.invoice, s.qtyFix, s.qtyFlex, s.qtyCal, s.notes || ''])
+        });
+        const pdfBlob = doc.output('blob');
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try { await navigator.share({ files: [file], title: fileName, text: `Overzicht ${months[selM]} ${selY}` }); } 
+            catch (err) { if (err.name !== 'AbortError') doc.save(fileName); }
+        } else { doc.save(fileName); }
+    }
 </script>
 </body>
 </html>
