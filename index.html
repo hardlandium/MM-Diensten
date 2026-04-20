@@ -2,351 +2,282 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>S&S Tracker V308-ROBUST-IMP</title>
-    
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22black%22/><text y=%22.9em%22 font-size=%2280%22 font-weight=%22bold%22 fill=%22%23ff3333%22 font-family=%22Arial%22>S</text></svg>">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROMO TRACKER V45.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
-            --mm-red: #ff3333; --mm-orange: #ff9900;
-            --bg: #000; --card-bg: #161616; --text-dark: #fff; --text-gray: #999;
-            --color-wait: #4db8ff; --color-future: #00ff88; --color-done: #444;
-            --mm-font: 'Arial Black', sans-serif;
-            --h-unit: 46px;
-            --skew-deg: -10deg;
-            --unskew-deg: 10deg;
+            --bg: #000000;
+            --panel-bg: #0a0a0a;
+            --panel-inner: #000000;
+            --accent-red: #ff3b30;
+            --accent-orange: #ff9500;
+            --accent-green: #4cd964;
+            --accent-blue: #00a3ff;
+            --accent-purple: #af52de;
+            --border: #1c1c1e;
+            --text-main: #ffffff;
+            --text-dim: #888;
         }
+
+        * { box-sizing: border-box; font-family: 'Arial Black', sans-serif; text-transform: uppercase; margin: 0; padding: 0; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 8px; font-size: 11px; overflow-x: hidden; }
+        .container { max-width: 100%; margin: 0 auto; }
+
+        header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .logo-sq { background: var(--accent-red); color: white; padding: 4px 10px; font-weight: 900; font-size: 16px; border-radius: 4px; box-shadow: 0 0 10px rgba(255,59,48,0.4); }
+        h1 { font-size: 13px; font-style: italic; letter-spacing: 1px; }
+
+        .admin-controls { display: flex; gap: 6px; }
+        .ctrl-btn { background: var(--panel-bg); border: 1px solid #222; width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .ctrl-btn:active { transform: scale(0.9); }
+        .btn-share { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(0,163,255,0.2); }
+
+        .input-panel { background: var(--panel-bg); border: 1px solid var(--border); padding: 8px; border-radius: 10px; margin-bottom: 10px; }
+        .modality-selector { display: flex; gap: 4px; margin-bottom: 8px; }
+        .mod-btn { flex: 1; background: var(--panel-inner); border: 1px solid var(--border); color: var(--text-dim); padding: 8px 2px; font-size: 8px; cursor: pointer; border-radius: 4px; }
         
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        .material-icons { font-size: 20px; display: inline-block; line-height: 1; vertical-align: middle; }
-        
-        body { font-family: var(--mm-font); font-weight: 900; font-style: italic; background: var(--bg); margin: 0; padding-bottom: env(safe-area-inset-bottom); color: var(--text-dark); text-transform: uppercase; overflow-x: hidden; }
-        .container { padding: 0 8px; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; min-height: 100vh; }
-        .card { background: var(--card-bg); border-radius: 16px; padding: 14px 12px; margin-top: 10px; border: 1px solid #222; position: relative; }
-        
-        .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
-        .logo-box { background: #000; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #333; }
-        .logo-s { color: var(--mm-red); font-size: 22px; font-weight: 900; }
-        .header-title { font-size: 18px; letter-spacing: 0.5px; color: #fff; font-style: italic; }
+        .mod-btn.active[data-mod="CASHBACK"] { border-color: var(--accent-blue); color: var(--accent-blue); box-shadow: 0 0 8px rgba(0,163,255,0.3); }
+        .mod-btn.active[data-mod="BUNDLE"] { border-color: var(--accent-orange); color: var(--accent-orange); box-shadow: 0 0 8px rgba(255,149,0,0.3); }
+        .mod-btn.active[data-mod="DISCOUNT"] { border-color: var(--accent-purple); color: var(--accent-purple); box-shadow: 0 0 8px rgba(175,82,222,0.3); }
 
-        .inner-txt { transform: skewX(var(--unskew-deg)); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; gap: 6px; font-style: italic; }
+        .input-row { display: flex; gap: 4px; margin-bottom: 4px; align-items: center; }
+        input { background: var(--panel-inner); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; padding: 10px; font-size: 12px; outline: none; }
+        .name-input { flex: 2; }
+        .url-input { flex: 1; border-color: #333; color: var(--accent-blue); text-transform: none; font-size: 10px; }
+        .search-input { flex: 1; border-color: #333; height: 38px; }
 
-        .input-skew { height: var(--h-unit); border: 1px solid #333; background: #111; color: #fff; font-family: inherit; font-style: italic; font-weight: 900; font-size: 15px; transform: skewX(var(--skew-deg)); border-radius: 6px; outline: none; padding: 0; display: flex; overflow: hidden; }
-        .input-skew input, .input-skew select { background: transparent; border: none; color: inherit; font-family: inherit; font-style: inherit; font-weight: inherit; font-size: inherit; width: 100%; height: 100%; text-align: center; transform: skewX(var(--unskew-deg)); outline: none; text-transform: uppercase; }
-        
-        #qtyFix::placeholder { color: var(--mm-red); opacity: 0.9; }
-        #qtyFlex::placeholder { color: var(--mm-orange); opacity: 0.9; }
-        #qtyCal::placeholder { color: var(--color-wait); opacity: 0.9; }
-        input::placeholder { font-style: italic; text-transform: uppercase; }
+        .icon-box { position: relative; width: 38px; height: 38px; background: var(--panel-inner); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+        .icon-box input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 2; }
+        .save-btn { width: 50px; height: 38px; background: #1c1c1e; border: 1px solid #333; color: var(--accent-green); font-weight: 900; border-radius: 6px; cursor: pointer; }
 
-        .btn-action-slim { cursor: pointer; color: var(--text-gray); border: 1px solid #333; background: #111; transform: skewX(var(--skew-deg)); border-radius: 6px; height: var(--h-unit); display: flex; align-items: center; justify-content: center; font-family: inherit; font-style: italic; font-weight: 900; text-transform: uppercase; font-size: 13px; transition: all 0.2s; }
-        .btn-action-slim.submit-style { color: var(--color-future); font-size: 16px; }
-        .btn-success { color: #000 !important; background: var(--color-future) !important; border-color: var(--color-future) !important; }
-        .active-wait { background: var(--color-wait) !important; color: #000 !important; border-color: var(--color-wait) !important; }
+        .card { background: var(--panel-bg); margin-bottom: 6px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); border-left: 4px solid #333; }
+        .card-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .p-title-compact { font-size: 15px; color: #fff; font-style: italic; cursor: pointer; text-decoration: underline rgba(255,255,255,0.1); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .progress-container { grid-column: span 3; }
-        .target-container { grid-column: span 1; }
+        .tag-container { display: flex; gap: 5px; margin-left: 8px; }
+        .tag { font-size: 7px; padding: 1px 6px; border-radius: 10px; font-weight: 900; background: transparent; border: 1px solid transparent; }
+        .tag-cashback { border-color: var(--accent-blue); color: var(--accent-blue); box-shadow: 0 0 5px rgba(0,163,255,0.3); }
+        .tag-bundle { border-color: var(--accent-orange); color: var(--accent-orange); box-shadow: 0 0 5px rgba(255,149,0,0.3); }
+        .tag-discount { border-color: var(--accent-purple); color: var(--accent-purple); box-shadow: 0 0 5px rgba(175,82,222,0.3); }
 
-        .progress-bar-wrapper { height: 42px; background: #0a0a0a; border-radius: 6px; overflow: hidden; border: 1px solid #222; position: relative; display: flex; align-items: center; transform: skewX(var(--skew-deg)); }
-        .fill-segment { height: 100%; transition: width 0.8s ease; position: absolute; top: 0; }
-        #fillFix { background: linear-gradient(90deg, #660000, var(--mm-red)); z-index: 2; }
-        #fillFlexSegment { background: linear-gradient(90deg, #663300, var(--mm-orange)); z-index: 1; }
-        #fillBranded { background: linear-gradient(90deg, #004466, var(--color-wait)); }
-        
-        .bar-label-left, .bar-label-right { position: absolute; z-index: 5; font-size: 12px; color: #fff; transform: skewX(var(--unskew-deg)); pointer-events: none; font-style: italic; }
-        .bar-label-left { left: 12px; }
-        .bar-label-right { right: 12px; }
-
-        .qty-control-skew { display: grid; grid-template-columns: 35px 1fr 35px; background: #111; border: 1px solid #333; height: var(--h-unit); transform: skewX(var(--skew-deg)); border-radius: 6px; overflow: hidden; }
-        .qty-btn-skew { background: #222; border: none; color: var(--text-gray); cursor: pointer; font-weight: 900; font-size: 22px; transform: skewX(var(--unskew-deg)); font-style: italic; }
-        .qty-input-skew { background: transparent; border: none; text-align: center; font-family: inherit; font-weight: 900; font-size: 16px; transform: skewX(var(--unskew-deg)); width: 100%; outline: none; font-style: italic; }
-
-        #salesLog { flex: 1; overflow-y: auto; margin: 8px 0; max-height: 450px; }
-        .log-item { background: #0c0c0c; border-radius: 12px; padding: 12px 8px; margin-bottom: 10px; border: 1px solid #222; position: relative; overflow: hidden; }
-        .log-main-grid { display: grid; grid-template-columns: 45px 1fr 110px 35px; align-items: center; gap: 10px; }
-        
-        .status-bar-left, .status-bar-right { position: absolute; top: 0; bottom: 0; width: 4px; }
-        .status-bar-left { left: 0; } .status-bar-right { right: 0; }
-
-        .log-qty-cols { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; background: #000; border-radius: 8px; padding: 5px 2px; border: 1px solid #1a1a1a; transform: skewX(var(--skew-deg)); }
-        .qty-col { display: flex; flex-direction: column; gap: 0px; transform: skewX(var(--unskew-deg)); }
-        .qty-col-label { font-size: 7px; color: #555; font-style: italic; }
-        .qty-col-val { font-size: 14px; font-weight: 900; font-style: italic; }
-        
-        .log-actions { display: flex; flex-direction: column; gap: 8px; align-items: center; }
-        .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; margin-bottom: 10px; }
-        .col-3 { grid-column: span 3; } .col-4 { grid-column: span 4; } .col-6 { grid-column: span 6; }
+        #qr-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
+        #qr-container { background: #fff; padding: 20px; border-radius: 12px; }
+        #importFile { display: none; }
     </style>
 </head>
 <body>
 
+<div id="qr-overlay">
+    <div id="qr-title" style="margin-bottom:20px; font-size:18px; text-align:center;"></div>
+    <div id="qr-container"></div>
+    <div onclick="closeQR()" style="margin-top:30px; background:var(--accent-red); padding:15px 40px; border-radius:30px; font-weight:900;">CLOSE</div>
+</div>
+
 <div class="container">
-    <div class="card">
-        <div class="card-header">
-            <div class="logo-box"><span class="logo-s">S</span></div>
-            <div class="header-title">SALES & SOLUTIONS</div>
+    <header>
+        <div class="header-left"><div class="logo-sq">P</div><h1>TRACKER</h1></div>
+        <div class="admin-controls">
+            <div class="ctrl-btn btn-share" onclick="handleFullShare()"><svg viewBox="0 0 24 24" style="fill:var(--accent-blue); width:20px;"><path d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19A2.92,2.92 0 0,0 18,16.08Z"/></svg></div>
+            <div class="ctrl-btn" onclick="exportCSV()"><svg style="fill:var(--text-dim)" viewBox="0 0 24 24"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg></div>
+            <div class="ctrl-btn" onclick="triggerImport()"><svg style="fill:var(--accent-green)" viewBox="0 0 24 24"><path d="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"/></svg></div>
+            <input type="file" id="importFile" accept=".csv" onchange="importCSV(event)">
         </div>
-        
-        <div class="stats-grid">
-            <div class="progress-container">
-                <div class="progress-bar-wrapper">
-                    <div class="bar-label-left">INSURANCE</div>
-                    <div class="bar-label-right">
-                        FIX:<b id="valFix">0</b> FLX:<b id="valFlex">0</b> | <span id="percVerz">0%</span>
-                    </div>
-                    <div id="fillFix" class="fill-segment" style="width:0%;"></div>
-                    <div id="fillFlexSegment" class="fill-segment" style="width:0%;"></div>
-                </div>
-            </div>
-            <div class="target-container">
-                <div class="input-skew" style="border-color: #333; background: #0a0a0a;">
-                    <input type="number" id="targetVerz" oninput="saveTargets()" style="color:#fff; font-size:16px;">
-                </div>
-            </div>
-        </div>
+    </header>
 
-        <div class="stats-grid">
-            <div class="progress-container">
-                <div class="progress-bar-wrapper">
-                    <div class="bar-label-left">CALIBRATION</div>
-                    <div class="bar-label-right">
-                        CAL:<b id="valCal">0</b> | <span id="percBranded">0%</span>
-                    </div>
-                    <div id="fillBranded" class="fill-segment" style="width:0%;"></div>
-                </div>
-            </div>
-            <div class="target-container">
-                <div class="input-skew" style="border-color: #333; background: #0a0a0a;">
-                    <input type="number" id="targetVerzCalibration" oninput="saveTargets()" style="color:#fff; font-size:16px;">
-                </div>
-            </div>
+    <div class="input-panel">
+        <div class="modality-selector">
+            <div class="mod-btn" data-mod="CASHBACK" onclick="toggleMod(this, 'CASHBACK')">CASHBACK</div>
+            <div class="mod-btn" data-mod="BUNDLE" onclick="toggleMod(this, 'BUNDLE')">BUNDLE</div>
+            <div class="mod-btn" data-mod="DISCOUNT" onclick="toggleMod(this, 'DISCOUNT')">DISCOUNT</div>
         </div>
-
-        <div class="grid-12" style="margin-top:10px; margin-bottom:0;">
-            <div class="btn-action-slim col-3" onclick="shareAsPDF()"><div class="inner-txt"><span class="material-icons">share</span>SHARE</div></div>
-            <div class="btn-action-slim col-3" onclick="manualExport()"><div class="inner-txt"><span class="material-icons">file_download</span>EXP</div></div>
-            <div class="btn-action-slim col-3" onclick="document.getElementById('importInput').click()"><div class="inner-txt"><span class="material-icons">file_upload</span>IMP</div></div>
-            <div class="btn-action-slim col-3" onclick="if(confirm('CLEAR ALL?')){localStorage.clear();location.reload();}"><div class="inner-txt"><span class="material-icons" style="color:var(--mm-red)">delete_sweep</span>CLR</div></div>
+        <div class="input-row">
+            <input type="text" id="name" class="name-input" placeholder="PROMOTION NAME">
+            <input type="text" id="url" class="url-input" placeholder="URL (OPTIONAL)">
         </div>
-        <input type="file" id="importInput" style="display:none" accept=".csv, .json, text/csv, text/plain" onchange="manualImport(event)">
+        <div class="input-row">
+            <input type="text" id="search" class="search-input" placeholder="SEARCH PROMOS..." oninput="render()">
+            <div class="icon-box"><svg viewBox="0 0 24 24" style="width:18px; fill:var(--accent-green)"><path d="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.9 3,6V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V6A2,2 0 0,0 19,4M19,20H5V10H19V20M19,8H5V6H19V8M7,12H12V17H7V12Z"/></svg><input type="date" id="start"></div>
+            <div class="icon-box"><svg viewBox="0 0 24 24" style="width:18px; fill:var(--accent-red)"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6V12L16,14.5L16.7,13.2L13.5,11.3V6H12Z"/></svg><input type="date" id="end"></div>
+            <button class="save-btn" id="save-action-btn" onclick="handleAction()">ADD</button>
+        </div>
     </div>
 
-    <div class="card">
-        <form id="saleForm">
-            <div class="grid-12">
-                <div class="input-skew col-6"><input type="text" id="invoice" inputmode="numeric" placeholder="INVOICE #" required style="text-align:left; padding-left:15px;"></div>
-                <div class="input-skew col-6"><input type="text" id="notes" placeholder="NOTE..." style="text-align:left; padding-left:15px;"></div>
-            </div>
-            <div class="grid-12">
-                <div class="qty-control-skew col-4"><button type="button" class="qty-btn-skew" onclick="adj('qtyFix',-1)">-</button><input type="number" id="qtyFix" class="qty-input-skew" placeholder="FIX" style="color:var(--mm-red)"><button type="button" class="qty-btn-skew" onclick="adj('qtyFix',1)">+</button></div>
-                <div class="qty-control-skew col-4"><button type="button" class="qty-btn-skew" onclick="adj('qtyFlex',-1)">-</button><input type="number" id="qtyFlex" class="qty-input-skew" placeholder="FLX" style="color:var(--mm-orange)"><button type="button" class="qty-btn-skew" onclick="adj('qtyFlex',1)">+</button></div>
-                <div class="qty-control-skew col-4"><button type="button" class="qty-btn-skew" onclick="adj('qtyCal',-1)">-</button><input type="number" id="qtyCal" class="qty-input-skew" placeholder="CAL" style="color:var(--color-wait)"><button type="button" class="qty-btn-skew" onclick="adj('qtyCal',1)">+</button></div>
-            </div>
-            <div class="grid-12">
-                <div class="input-skew col-4"><input type="date" id="dateInput" required style="color:var(--text-gray); font-size:12px;"></div>
-                <div id="waitBtn" class="btn-action-slim col-4" onclick="toggleDateViaBox()"><div class="inner-txt"><span class="material-icons">hourglass_empty</span>WAIT</div><input type="checkbox" id="dateUnknown" style="display:none" onchange="toggleDate(this)"></div>
-                <button type="submit" id="mainSubmitBtn" class="btn-action-slim submit-style col-4"><div class="inner-txt"><span class="material-icons">save</span><span id="btnText">SAVE</span></div></button>
-            </div>
-        </form>
-    </div>
-
-    <div class="card" style="flex:1; display:flex; flex-direction:column;">
-        <div class="grid-12" style="margin-bottom:12px; gap:6px;">
-            <div class="input-skew" style="grid-column: span 5;"><input type="text" id="searchInput" placeholder="SEARCH..." oninput="render()" style="text-align:left; padding-left:15px;"></div>
-            <div class="input-skew" style="grid-column: span 3;"><select id="viewMonth" onchange="render()"></select></div>
-            <div class="input-skew" style="grid-column: span 2;"><select id="viewYear" onchange="render()"></select></div>
-            <div id="eyeBtn" class="btn-action-slim" style="grid-column: span 2;" onclick="toggleRunningFilter()"><div class="inner-txt"><span id="eyeIcon" class="material-icons" style="font-size:24px;">visibility_off</span></div></div>
-        </div>
-        <div id="salesLog"></div>
-    </div>
+    <div id="list"></div>
 </div>
 
 <script>
-    const STORAGE_KEY = 'SS_DATA_V184';
-    let sales = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let promos = JSON.parse(localStorage.getItem('p_v36_final')) || [];
+    let selectedMods = [];
     let editId = null;
-    let showOnlyOpen = false;
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    function getLocalDate() { return new Date().toISOString().split('T')[0]; }
-    function adj(id, v) { const el = document.getElementById(id); el.value = Math.max(0, (parseInt(el.value) || 0) + v); }
-    function toggleDateViaBox() { const cb = document.getElementById('dateUnknown'); cb.checked = !cb.checked; toggleDate(cb); }
-    
-    function toggleDate(cb) {
-        const di = document.getElementById('dateInput'), btn = document.getElementById('waitBtn');
-        if(cb.checked) { btn.classList.add('active-wait'); di.disabled = true; di.closest('.input-skew').style.opacity = "0.2"; } 
-        else { btn.classList.remove('active-wait'); di.disabled = false; di.closest('.input-skew').style.opacity = "1"; }
+    const COLORS = { 
+        ACTIVE: [76, 217, 100], 
+        UPCOMING: [0, 163, 255], 
+        EXPIRED: [68, 68, 68], 
+        EXPIRING: [255, 59, 48], 
+        TAGS: { CASHBACK: [0, 163, 255], BUNDLE: [255, 149, 0], DISCOUNT: [175, 82, 222] } 
+    };
+
+    function getStatusData(start, end) {
+        const now = new Date().setHours(0,0,0,0);
+        const dS = new Date(start).setHours(0,0,0,0);
+        const dE = new Date(end).setHours(0,0,0,0);
+        if (now < dS) return { text: "UPCOMING", color: COLORS.UPCOMING };
+        if (now > dE) return { text: "EXPIRED", color: COLORS.EXPIRED };
+        if ((dE - now) <= 259200000) return { text: "EXPIRING", color: COLORS.EXPIRING };
+        return { text: "ACTIVE", color: COLORS.ACTIVE };
     }
 
-    function toggleRunningFilter() { 
-        showOnlyOpen = !showOnlyOpen; document.getElementById('eyeBtn').classList.toggle('active-eye', showOnlyOpen);
-        document.getElementById('eyeIcon').innerText = showOnlyOpen ? 'visibility' : 'visibility_off'; render(); 
+    function triggerImport() { document.getElementById('importFile').click(); }
+
+    function importCSV(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const lines = ev.target.result.split('\n');
+            const newPromos = [];
+            for(let i = 1; i < lines.length; i++) {
+                if(!lines[i].trim()) continue;
+                const p = lines[i].split(',');
+                if(p.length >= 6) {
+                    newPromos.push({ 
+                        id: p[0] || Date.now() + i, 
+                        name: p[1], 
+                        url: p[2], 
+                        start: p[3], 
+                        end: p[4], 
+                        mods: p[5].replace('\r', '').split('|') 
+                    });
+                }
+            }
+            if(newPromos.length > 0) { promos = newPromos; save(); }
+        };
+        reader.readAsText(file);
     }
 
-    function copyToClipboard(val, el) {
-        navigator.clipboard.writeText(val).then(() => {
-            const oldColor = el.style.color;
-            el.style.color = 'var(--color-future)';
-            setTimeout(() => { el.style.color = oldColor; }, 500);
+    async function handleFullShare() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFillColor(0, 0, 0);
+        doc.rect(0, 0, 210, 297, 'F');
+        doc.setFillColor(255, 59, 48);
+        doc.roundedRect(15, 15, 10, 10, 2, 2, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("P", 18, 22.5);
+        doc.setFontSize(12);
+        doc.text("TRACKER REPORT", 30, 22);
+        doc.setDrawColor(28, 28, 30);
+        doc.line(15, 30, 195, 30);
+
+        let y = 45;
+        promos.sort((a,b) => new Date(a.end) - new Date(b.end)).forEach((p) => {
+            if (y > 260) { doc.addPage(); doc.setFillColor(0,0,0); doc.rect(0,0,210,297,'F'); y = 25; }
+            const stat = getStatusData(p.start, p.end);
+            doc.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
+            doc.rect(15, y, 2, 20, 'F');
+            doc.setFontSize(8); doc.setTextColor(136, 136, 136);
+            doc.text(`${p.start.split('-').reverse().join('/')} > `, 20, y + 5);
+            doc.setTextColor(stat.color[0], stat.color[1], stat.color[2]);
+            doc.text(`${p.end.split('-').reverse().join('/')}`, 42, y + 5);
+            doc.setFontSize(9); doc.text(stat.text, 170, y + 5, { align: 'right' });
+            doc.setTextColor(255, 255, 255); doc.setFontSize(13); doc.setFont("helvetica", "bolditalic");
+            doc.text(p.name, 20, y + 14);
+            let tx = 20;
+            p.mods.forEach(m => {
+                const tc = COLORS.TAGS[m] || [255,255,255];
+                doc.setDrawColor(tc[0], tc[1], tc[2]); doc.roundedRect(tx, y + 17, 18, 4, 1, 1, 'D');
+                doc.setFontSize(6); doc.setFont("helvetica", "bold"); doc.setTextColor(tc[0], tc[1], tc[2]);
+                doc.text(m, tx + 9, y + 20, { align: 'center' }); tx += 22;
+            });
+            y += 30;
         });
+
+        const pdfBlob = doc.output('blob');
+        const file = new File([pdfBlob], "Promo_Report.pdf", { type: "application/pdf" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try { await navigator.share({ files: [file], title: 'Promo Report' }); } catch (err) { doc.save("Promo_Report.pdf"); }
+        } else { doc.save("Promo_Report.pdf"); }
     }
 
     function render() {
-        const log = document.getElementById('salesLog'), selM = parseInt(document.getElementById('viewMonth').value), selY = parseInt(document.getElementById('viewYear').value), search = document.getElementById('searchInput').value.toLowerCase();
-        const today = getLocalDate();
-        let mFx=0, mFl=0, mB=0; log.innerHTML = '';
-        
-        sales.forEach(s => { 
-            if(!s.isWait && s.date !== "2099-12-31") {
-                const d = new Date(s.date); if(d.getMonth() === selM && d.getFullYear() === selY) { mFx += parseInt(s.qtyFix)||0; mFl += parseInt(s.qtyFlex)||0; mB += parseInt(s.qtyCal)||0; }
-            }
-        });
-        
-        const tV = parseInt(document.getElementById('targetVerz').value) || 1, tB = parseInt(document.getElementById('targetVerzCalibration').value) || 1;
-        document.getElementById('valFix').innerText = mFx; document.getElementById('valFlex').innerText = mFl; document.getElementById('valCal').innerText = mB;
-        
-        const fixW = Math.min((mFx/tV)*100, 100);
-        document.getElementById('fillFix').style.width = fixW + '%';
-        const flxW = Math.min((mFl/tV)*100, 100 - fixW);
-        document.getElementById('fillFlexSegment').style.width = flxW + '%'; 
-        document.getElementById('fillFlexSegment').style.left = fixW + '%';
-        document.getElementById('fillBranded').style.width = Math.min((mB/tB)*100, 100) + '%';
-        
-        document.getElementById('percVerz').innerText = Math.round(((mFx+mFl)/tV)*100) + '%'; 
-        document.getElementById('percBranded').innerText = Math.round((mB/tB)*100) + '%';
-
-        sales.sort((a,b) => b.date.localeCompare(a.date)).forEach(s => {
-            const isWait = s.isWait || s.date === "2099-12-31"; const sD = new Date(s.date); 
-            const isInPeriod = isWait || (sD.getMonth() === selM && sD.getFullYear() === selY);
-            if (!isInPeriod || (showOnlyOpen && !isWait && s.date <= today) || (search && !s.invoice.toLowerCase().includes(search) && !(s.notes && s.notes.toLowerCase().includes(search)))) return;
-            
-            const dP = s.date.split('-'); 
-            const shortD = isWait ? '---' : `${dP[2]}\n${months[parseInt(dP[1])-1]}`;
-            const statusColor = isWait ? 'var(--color-wait)' : (s.date > today ? 'var(--color-future)' : 'var(--color-done)');
-            
-            log.innerHTML += `
-            <div class="log-item">
-                <div class="status-bar-left" style="background:${statusColor}"></div>
-                <div class="status-bar-right" style="background:${statusColor}"></div>
-                <div class="log-main-grid">
-                    <div style="font-size:9px; color:var(--text-gray); text-align:center; font-style:italic;">${shortD}</div>
-                    <div style="overflow:hidden; display:flex; flex-direction:column; justify-content:center;">
-                        <div class="invoice-tap" onclick="copyToClipboard('${s.invoice}', this)" style="font-size:16px; font-weight:900; color:#fff; letter-spacing:0.5px;">${s.invoice}</div>
-                        <div style="font-size:13px; font-weight:900; color:var(--mm-orange); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px;">${s.notes || '-'}</div>
+        const container = document.getElementById('list');
+        const q = document.getElementById('search').value.toLowerCase();
+        container.innerHTML = '';
+        promos.filter(p => p.name.toLowerCase().includes(q))
+        .sort((a,b) => new Date(a.end) - new Date(b.end))
+        .forEach(p => {
+            const stat = getStatusData(p.start, p.end);
+            const card = document.createElement('div');
+            card.className = 'card'; card.style.borderLeftColor = `rgb(${stat.color.join(',')})`;
+            const tags = p.mods.map(m => `<span class="tag tag-${m.toLowerCase()}">${m}</span>`).join('');
+            card.innerHTML = `
+                <div class="card-row-top">
+                    <div style="display:flex; align-items:center;">
+                        <span style="color:var(--text-dim)">${p.start.split('-').reverse().slice(0,2).join('/')} > <span style="color:rgb(${stat.color.join(',')})">${p.end.split('-').reverse().slice(0,2).join('/')}</span></span>
+                        <div class="tag-container">${tags}</div>
                     </div>
-                    <div class="log-qty-cols">
-                        <div class="qty-col"><span class="qty-col-label">FIX</span><span class="qty-col-val" style="color:var(--mm-red)">${s.qtyFix}</span></div>
-                        <div class="qty-col"><span class="qty-col-label">FLX</span><span class="qty-col-val" style="color:var(--mm-orange)">${s.qtyFlex}</span></div>
-                        <div class="qty-col"><span class="qty-col-label">CAL</span><span class="qty-col-val" style="color:var(--color-wait)">${s.qtyCal}</span></div>
-                    </div>
-                    <div class="log-actions">
-                        <span class="material-icons" style="color:#eee; font-size:20px; cursor:pointer;" onclick="startEdit(${s.id})">edit</span>
-                        <span class="material-icons" style="color:#444; font-size:20px; cursor:pointer;" onclick="confirmDelete(${s.id})">delete</span>
-                    </div>
+                    <div style="color:rgb(${stat.color.join(',')}); font-weight:900;">${stat.text}</div>
                 </div>
-            </div>`;
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="p-title-compact" onclick="showQR('${p.name}', '${p.url||''}')">${p.name}</div>
+                    <div style="display:flex; gap:15px;">
+                        <div onclick="editPromo(${p.id})"><svg viewBox="0 0 24 24" style="width:16px; fill:var(--text-dim)"><path d="M3,17.25V21H6.75L17.81,9.93L14.07,6.19L3,17.25Z"/></svg></div>
+                        <div onclick="del(${p.id})"><svg viewBox="0 0 24 24" style="width:16px; fill:var(--accent-red)"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/></svg></div>
+                    </div>
+                </div>`;
+            container.appendChild(card);
         });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
     }
 
-    document.getElementById('saleForm').onsubmit = function(e) {
-        e.preventDefault(); const btn = document.getElementById('mainSubmitBtn'), wait = document.getElementById('dateUnknown').checked;
-        const data = { invoice: document.getElementById('invoice').value, notes: document.getElementById('notes').value, qtyFix: parseInt(document.getElementById('qtyFix').value)||0, qtyFlex: parseInt(document.getElementById('qtyFlex').value)||0, qtyCal: parseInt(document.getElementById('qtyCal').value)||0, date: wait ? "2099-12-31" : document.getElementById('dateInput').value, isWait: wait };
-        if(editId) { sales[sales.findIndex(x => x.id === editId)] = { id: editId, ...data }; editId = null; document.getElementById('btnText').innerText = 'SAVE'; } 
-        else { sales.push({ id: Date.now(), ...data }); }
-        btn.classList.add('btn-success'); setTimeout(() => btn.classList.remove('btn-success'), 600);
-        this.reset(); document.getElementById('dateInput').value = getLocalDate(); toggleDate(document.getElementById('dateUnknown')); render();
-    };
-
-    function startEdit(id) {
-        const s = sales.find(x => x.id === id); if(!s) return; editId = id; document.getElementById('invoice').value = s.invoice; document.getElementById('notes').value = s.notes || '';
-        document.getElementById('qtyFix').value = s.qtyFix; document.getElementById('qtyFlex').value = s.qtyFlex; document.getElementById('qtyCal').value = s.qtyCal;
-        document.getElementById('dateInput').value = s.isWait ? getLocalDate() : s.date; document.getElementById('dateUnknown').checked = s.isWait;
-        toggleDate(document.getElementById('dateUnknown')); document.getElementById('btnText').innerText = 'UPDATE'; window.scrollTo({ top: 0, behavior: 'smooth' });
+    function toggleMod(btn, mod) {
+        if(selectedMods.includes(mod)) selectedMods = selectedMods.filter(m => m !== mod);
+        else selectedMods.push(mod);
+        btn.classList.toggle('active');
     }
 
-    function manualExport() {
-        const rows = sales.map(s => [s.id, s.date, `"${s.invoice}"`, s.qtyFix, s.qtyFlex, s.qtyCal, `"${s.notes || ''}"`, s.isWait].join(","));
-        const blob = new Blob([["id,date,invoice,qtyFix,qtyFlex,qtyCal,notes,isWait", ...rows].join("\n")], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob); const dl = document.createElement('a'); dl.href = url; dl.download = `S-S_Backup_${getLocalDate()}.csv`; dl.click();
+    function handleAction() {
+        const n = document.getElementById('name'), s = document.getElementById('start'), e = document.getElementById('end'), u = document.getElementById('url');
+        if(!n.value || !s.value || !e.value || selectedMods.length === 0) return;
+        const data = { name: n.value, url: u.value, start: s.value, end: e.value, mods: [...selectedMods] };
+        if(editId) {
+            promos = promos.map(x => x.id == editId ? { ...x, ...data } : x);
+            editId = null; document.getElementById('save-action-btn').innerText = 'ADD';
+        } else { promos.push({ id: Date.now(), ...data }); }
+        n.value = s.value = e.value = u.value = '';
+        selectedMods = []; document.querySelectorAll('.mod-btn').forEach(b => b.classList.remove('active'));
+        save();
     }
 
-    function manualImport(event) {
-        const file = event.target.files[0]; if (!file) return;
-        const reader = new FileReader(); reader.onload = function(e) {
-            try {
-                const text = e.target.result;
-                const lines = text.split(/\r?\n/); const imported = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    
-                    // Improved split: supports comma and semicolon, handles quotes
-                    const cols = line.split(/[,;](?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (cols.length >= 6) {
-                        imported.push({ 
-                            id: parseInt(cols[0]) || Date.now() + i, 
-                            date: cols[1].trim(), 
-                            invoice: cols[2].replace(/"/g, '').trim(), 
-                            qtyFix: parseInt(cols[3]) || 0, 
-                            qtyFlex: parseInt(cols[4]) || 0, 
-                            qtyCal: parseInt(cols[5]) || 0, 
-                            notes: cols[6] ? cols[6].replace(/"/g, '').trim() : '', 
-                            isWait: cols[7] ? cols[7].trim().toLowerCase() === 'true' : false 
-                        });
-                    }
-                }
-                if (imported.length > 0) { 
-                    sales = imported; 
-                    render(); 
-                    alert(`SUCCESS: ${imported.length} ORDERS IMPORTED`); 
-                } else {
-                    alert("NO VALID ORDERS FOUND IN FILE");
-                }
-            } catch (err) { alert("IMPORT FAILED: CHECK FILE FORMAT"); }
-            event.target.value = '';
-        }; reader.readAsText(file);
+    function editPromo(id) {
+        const p = promos.find(x => x.id == id); editId = p.id;
+        document.getElementById('name').value = p.name;
+        document.getElementById('start').value = p.start;
+        document.getElementById('end').value = p.end;
+        document.getElementById('url').value = p.url || '';
+        selectedMods = [...p.mods];
+        document.querySelectorAll('.mod-btn').forEach(b => b.classList.toggle('active', selectedMods.includes(b.dataset.mod)));
+        document.getElementById('save-action-btn').innerText = 'SAVE';
+        window.scrollTo(0,0);
     }
 
-    function saveTargets() { localStorage.setItem('ss_t_v', document.getElementById('targetVerz').value); localStorage.setItem('ss_t_b_c', document.getElementById('targetVerzCalibration').value); render(); }
-    function confirmDelete(id) { if(confirm('DELETE?')) { sales = sales.filter(x => x.id !== id); render(); } }
-
-    window.onload = function() {
-        const mS = document.getElementById('viewMonth'), yS = document.getElementById('viewYear'), n = new Date();
-        months.forEach((m, i) => mS.innerHTML += `<option value="${i}" ${i === n.getMonth() ? 'selected' : ''}>${m.toUpperCase()}</option>`);
-        [n.getFullYear(), n.getFullYear()-1, n.getFullYear()-2].forEach(y => yS.innerHTML += `<option value="${y}" ${y === n.getFullYear() ? 'selected' : ''}>${y}</option>`);
-        document.getElementById('targetVerz').value = localStorage.getItem('ss_t_v') || 40; 
-        document.getElementById('targetVerzCalibration').value = localStorage.getItem('ss_t_b_c') || 10;
-        document.getElementById('dateInput').value = getLocalDate(); render();
-    };
-
-    async function shareAsPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const selM = parseInt(document.getElementById('viewMonth').value);
-        const selY = parseInt(document.getElementById('viewYear').value);
-        const fileName = `S-S_Report_${months[selM]}_${selY}.pdf`;
-        const filtered = sales.filter(s => !s.isWait && new Date(s.date).getMonth() === selM && new Date(s.date).getFullYear() === selY);
-        doc.text(`S&S REPORT: ${months[selM]} ${selY}`, 15, 20);
-        doc.autoTable({
-            startY: 30,
-            head: [['DATE', 'INVOICE', 'FIX', 'FLX', 'CAL', 'NOTES']],
-            body: filtered.map(s => [s.date, s.invoice, s.qtyFix, s.qtyFlex, s.qtyCal, s.notes || ''])
-        });
-        const pdfBlob = doc.output('blob');
-        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try { await navigator.share({ files: [file], title: fileName, text: `Overzicht ${months[selM]} ${selY}` }); } 
-            catch (err) { if (err.name !== 'AbortError') doc.save(fileName); }
-        } else { doc.save(fileName); }
+    function save() { localStorage.setItem('p_v36_final', JSON.stringify(promos)); render(); }
+    function del(id) { if(confirm('DELETE?')) { promos = promos.filter(x => x.id != id); save(); } }
+    function exportCSV() {
+        let csv = "ID,NAME,URL,START,END,MODS\n";
+        promos.forEach(p => csv += `${p.id},${p.name},${p.url},${p.start},${p.end},${p.mods.join('|')}\n`);
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+        a.download = 'backup.csv'; a.click();
     }
+    function showQR(n, u) { if(!u) return; document.getElementById('qr-title').innerText = n; document.getElementById('qr-container').innerHTML = ""; new QRCode(document.getElementById('qr-container'), u); document.getElementById('qr-overlay').style.display='flex'; }
+    function closeQR() { document.getElementById('qr-overlay').style.display='none'; }
+
+    render();
 </script>
 </body>
 </html>
